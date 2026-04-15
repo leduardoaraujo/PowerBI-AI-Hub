@@ -1,4 +1,4 @@
-import { Wifi, WifiOff, RefreshCw } from "lucide-react";
+import { Wifi, WifiOff } from "lucide-react";
 import { useAppStore } from "../../store";
 
 export function ConnectionStatus() {

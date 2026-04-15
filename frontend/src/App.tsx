@@ -7,7 +7,10 @@ import { apiClient } from "./services/api";
 import { wsService } from "./services/ws";
 
 function App() {
-  const { setSession, setMessages, setMcpStatus, session } = useAppStore();
+  const session = useAppStore((s) => s.session);
+  const setMcpStatus = useAppStore((s) => s.setMcpStatus);
+  const addMessage = useAppStore((s) => s.addMessage);
+  const setLoading = useAppStore((s) => s.setLoading);
 
   useEffect(() => {
     const init = async () => {
@@ -22,28 +25,29 @@ function App() {
   }, [setMcpStatus]);
 
   useEffect(() => {
-    if (session) {
-      wsService.connect(session.id);
-      wsService.on("message", (event) => {
-        if (event.type === "message" && event.content) {
-          setMessages([
-            ...useAppStore.getState().messages,
-            {
-              id: crypto.randomUUID(),
-              session_id: session.id,
-              role: "assistant",
-              content: event.content as string,
-              tool_calls: [],
-              timestamp: new Date().toISOString(),
-            },
-          ]);
-        }
-      });
-      return () => {
-        wsService.disconnect();
-      };
-    }
-  }, [session, setMessages]);
+    if (!session) return;
+
+    wsService.connect(session.id);
+
+    wsService.on("message", (event) => {
+      if (!event) return;
+      if (event.type === "message" && "content" in event && event.content) {
+        addMessage({
+          id: crypto.randomUUID(),
+          session_id: session.id,
+          role: "assistant",
+          content: event.content as string,
+          tool_calls: [],
+          timestamp: new Date().toISOString(),
+        });
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      wsService.disconnect();
+    };
+  }, [session, addMessage, setLoading]);
 
   return (
     <BrowserRouter>

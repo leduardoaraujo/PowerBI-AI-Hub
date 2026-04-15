@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Markdown from "react-markdown";
 import { useAppStore } from "../../store";
 import { MessageBubble } from "./MessageBubble";
