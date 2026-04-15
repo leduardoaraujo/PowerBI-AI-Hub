@@ -1,7 +1,8 @@
+import React, { useRef, useEffect } from "react";
+import Markdown from "react-markdown";
 import { useAppStore } from "../../store";
 import { MessageBubble } from "./MessageBubble";
 import { ToolCallCard } from "../tools/ToolCallCard";
-import type { WSEvent } from "../../types";
 
 interface MessageListProps {
   streamingContent?: string;
@@ -9,15 +10,11 @@ interface MessageListProps {
 
 export function MessageList({ streamingContent }: MessageListProps) {
   const { messages } = useAppStore();
-  const endRef = React.useRef<HTMLDivElement>(null);
+  const endRef = useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingContent]);
-
-  const toolCalls = messages.flatMap((m) =>
-    m.tool_calls.map((tc) => ({ ...tc, messageId: m.id }))
-  );
 
   return (
     <div className="space-y-4">
@@ -32,7 +29,7 @@ export function MessageList({ streamingContent }: MessageListProps) {
       {streamingContent && (
         <div className="flex justify-start">
           <div className="bg-gray-100 rounded-lg px-4 py-2 max-w-[80%]">
-            <Markdown content={streamingContent} />
+            <Markdown>{streamingContent}</Markdown>
           </div>
         </div>
       )}
@@ -40,6 +37,3 @@ export function MessageList({ streamingContent }: MessageListProps) {
     </div>
   );
 }
-
-import React from "react";
-import Markdown from "react-markdown";
