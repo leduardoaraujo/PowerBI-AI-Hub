@@ -9,7 +9,12 @@ export class WebSocketService {
 
   connect(sessionId: string) {
     this.sessionId = sessionId;
-    const url = `ws://localhost:8000/ws?session_id=${sessionId}`;
+    const backendApiKey = import.meta.env.VITE_BACKEND_API_KEY as string | undefined;
+    const query = new URLSearchParams({ session_id: sessionId });
+    if (backendApiKey) {
+      query.set("api_key", backendApiKey);
+    }
+    const url = `ws://localhost:8000/ws?${query.toString()}`;
     this.ws = new WebSocket(url);
 
     this.ws.onmessage = (event) => {

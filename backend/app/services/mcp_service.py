@@ -19,6 +19,10 @@ class MCPService:
         await self._bridge.start(mode=mode)
         return self.get_status()
 
+    async def ensure_latest_binary(self) -> str | None:
+        version, _status = await self._downloader.ensure_latest_installed()
+        return self._downloader.resolve_exe_path(version=version)
+
     async def stop(self) -> None:
         await self._bridge.stop()
 

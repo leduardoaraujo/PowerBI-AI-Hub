@@ -1,3 +1,7 @@
+import hmac
+
+from fastapi import Header, HTTPException, Query, WebSocketException, status
+
 from app.core.mcp_bridge import MCPBridge
 from app.core.mcp_downloader import MCPDownloader
 from app.core.audit_logger import AuditLogger
@@ -46,3 +50,39 @@ def get_chat_service() -> ChatService:
     if _chat_service is None:
         _chat_service = ChatService(_get_mcp_bridge(), _get_audit_logger())
     return _chat_service
+
+
+def require_api_key(x_api_key: str | None = Header(default=None)) -> None:
+    expected = settings.backend_api_key.strip()
+    if not expected:
+        return
+
+    if not x_api_key:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing API key",
+        )
+
+    if not hmac.compare_digest(x_api_key, expected):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid API key",
+        )
+
+
+def require_api_key_ws(api_key: str | None = Query(default=None)) -> None:
+    expected = settings.backend_api_key.strip()
+    if not expected:
+        return
+
+    if not api_key:
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION,
+            reason="Missing API key",
+        )
+
+    if not hmac.compare_digest(api_key, expected):
+        raise WebSocketException(
+            code=status.WS_1008_POLICY_VIOLATION,
+            reason="Invalid API key",
+        )

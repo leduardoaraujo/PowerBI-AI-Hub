@@ -4,6 +4,7 @@ import logging
 import platform
 import shutil
 import zipfile
+import re
 from pathlib import Path
 
 import httpx
@@ -112,6 +113,33 @@ class MCPDownloader:
         except Exception:
             logger.warning("Could not fetch latest version from marketplace")
             return []
+
+    def _version_key(self, value: str) -> tuple[int, ...]:
+        parts = re.findall(r"\d+", value)
+        if not parts:
+            return (0,)
+        return tuple(int(part) for part in parts)
+
+    def _is_newer_version(self, latest: str, installed: str | None) -> bool:
+        if not installed:
+            return True
+        return self._version_key(latest) > self._version_key(installed)
+
+    async def ensure_latest_installed(self) -> tuple[str, str]:
+        latest_version = await self.get_latest_version()
+        installed_version = await self.get_installed_version()
+
+        if self._is_newer_version(latest_version, installed_version):
+            await self.download(version=latest_version)
+            logger.info(
+                "MCP updated. installed=%s latest=%s",
+                installed_version or "none",
+                latest_version,
+            )
+            return latest_version, "updated"
+
+        logger.info("MCP already up to date at version %s", installed_version)
+        return installed_version, "up_to_date"
 
     def resolve_exe_path(self, version: str | None = None) -> str | None:
         if settings.mcp_exe_path:

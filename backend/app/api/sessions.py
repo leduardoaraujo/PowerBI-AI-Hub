@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from app.models.session import Session
 from app.services.session_service import SessionService
-from app.dependencies import get_session_service
+from app.dependencies import get_session_service, require_api_key
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_api_key)])
 
 
 @router.post("")
@@ -31,7 +31,7 @@ async def get_session(
 ):
     session = session_service.get_session(session_id)
     if not session:
-        return {"error": "Session not found"}, 404
+        raise HTTPException(status_code=404, detail="Session not found")
     return session.model_dump()
 
 
@@ -42,7 +42,7 @@ async def delete_session(
 ):
     deleted = session_service.delete_session(session_id)
     if not deleted:
-        return {"error": "Session not found"}, 404
+        raise HTTPException(status_code=404, detail="Session not found")
     return {"status": "deleted"}
 
 

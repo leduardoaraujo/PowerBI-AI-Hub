@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from app.models.mcp import MCPStatus, MCPToolInfo, MCPDownloadRequest, MCPDownloadResult
 from app.services.mcp_service import MCPService
-from app.dependencies import get_mcp_service
+from app.dependencies import get_mcp_service, require_api_key
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_api_key)])
 
 
 @router.get("/status")

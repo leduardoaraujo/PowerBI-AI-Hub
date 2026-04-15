@@ -1,7 +1,12 @@
 import ky from "ky";
 import type { Session, MCPStatus, MCPToolInfo } from "../types";
 
-const api = ky.create({ prefixUrl: "http://localhost:8000/api" });
+const backendApiKey = import.meta.env.VITE_BACKEND_API_KEY as string | undefined;
+
+const api = ky.create({
+  prefixUrl: "http://localhost:8000/api",
+  headers: backendApiKey ? { "X-API-Key": backendApiKey } : undefined,
+});
 
 export const apiClient = {
   createSession: async (provider = "openai", model = "gpt-4o", mode = "readonly"): Promise<Session> => {

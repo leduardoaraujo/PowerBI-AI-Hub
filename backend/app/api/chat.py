@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from app.models.chat import ChatRequest
 from app.services.chat_service import ChatService
 from app.services.session_service import SessionService
-from app.dependencies import get_chat_service, get_session_service
+from app.dependencies import get_chat_service, get_session_service, require_api_key, require_api_key_ws
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_api_key)])
 
 
 @router.post("")
@@ -16,7 +16,7 @@ async def send_message(
 ):
     session = session_service.get_session(session_id)
     if not session:
-        return {"error": "Session not found"}, 404
+        raise HTTPException(status_code=404, detail="Session not found")
 
     message_id = None
     events = []
@@ -37,6 +37,7 @@ async def send_message(
 @router.websocket("/ws")
 async def chat_websocket(
     websocket: WebSocket,
+    _: None = Depends(require_api_key_ws),
     chat_service: ChatService = Depends(get_chat_service),
     session_service: SessionService = Depends(get_session_service),
 ):

@@ -9,12 +9,15 @@ class Settings(BaseSettings):
 
     openai_api_key: str = ""
     anthropic_api_key: str = ""
+    backend_api_key: str = ""
 
     mcp_exe_path: str = ""
     mcp_default_mode: str = "readonly"
     mcp_start_args: list[str] = ["--start"]
     mcp_request_timeout: float = 30.0
     mcp_health_check_interval: float = 15.0
+    mcp_auto_update_on_startup: bool = True
+    mcp_auto_update_timeout_seconds: float = 45.0
 
     approval_timeout_seconds: int = 600
 
@@ -35,3 +38,16 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+def validate_runtime_settings() -> None:
+    provider = settings.default_provider.lower()
+    if provider == "openai" and not settings.openai_api_key.strip():
+        raise RuntimeError(
+            "OPENAI_API_KEY is required when DEFAULT_PROVIDER is set to 'openai'."
+        )
+
+    if provider == "claude" and not settings.anthropic_api_key.strip():
+        raise RuntimeError(
+            "ANTHROPIC_API_KEY is required when DEFAULT_PROVIDER is set to 'claude'."
+        )

@@ -50,13 +50,17 @@ MCP_DEFAULT_MODE=readonly
 DEFAULT_PROVIDER=openai
 DEFAULT_MODEL=gpt-4o
 CORS_ORIGINS=["http://localhost:5173"]
+BACKEND_API_KEY=
+MCP_AUTO_UPDATE_ON_STARTUP=true
 ```
 
 Notas:
 
 - Nao commite arquivos `.env` com chaves reais.
-- `MCP_EXE_PATH` deve apontar para o executavel do Power BI Modeling MCP.
+- Se `MCP_AUTO_UPDATE_ON_STARTUP=true`, o backend verifica e baixa automaticamente a ultima versao do MCP no startup.
+- `MCP_EXE_PATH` pode ser definido manualmente para forcar um binario especifico.
 - O modo recomendado para usuarios finais e `readonly`.
+- Se `BACKEND_API_KEY` estiver definida no backend, envie a mesma chave no frontend via `VITE_BACKEND_API_KEY`.
 
 ## Rodando com Docker
 
@@ -148,6 +152,16 @@ Confira se a chave correspondente existe no `.env`:
 
 - OpenAI: `OPENAI_API_KEY`
 - Claude: `ANTHROPIC_API_KEY`
+
+O backend falha rapido no startup se `DEFAULT_PROVIDER` estiver sem a chave correspondente.
+
+### Erro 401/403 nas rotas
+
+Se configurou `BACKEND_API_KEY` no backend, configure tambem no frontend:
+
+```env
+VITE_BACKEND_API_KEY=sua-chave-aqui
+```
 
 ## Seguranca
 
