@@ -1,10 +1,19 @@
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { MainLayout } from "./components/layout/MainLayout";
 import { ChatWindow } from "./components/chat/ChatWindow";
 import { useAppStore } from "./store";
 import { apiClient } from "./services/api";
 import { wsService } from "./services/ws";
+
+const router = createBrowserRouter([
+  {
+    element: <MainLayout />,
+    children: [
+      { path: "/", element: <ChatWindow /> },
+    ],
+  },
+]);
 
 function App() {
   const session = useAppStore((s) => s.session);
@@ -49,15 +58,7 @@ function App() {
     };
   }, [session, addMessage, setLoading]);
 
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<MainLayout />}>
-          <Route index element={<ChatWindow />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
