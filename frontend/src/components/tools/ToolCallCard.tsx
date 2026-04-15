@@ -10,41 +10,41 @@ export function ToolCallCard({ toolCall }: ToolCallCardProps) {
   const [expanded, setExpanded] = useState(false);
 
   const statusIcon = {
-    pending: <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />,
-    running: <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />,
-    completed: <CheckCircle className="w-4 h-4 text-green-500" />,
-    error: <XCircle className="w-4 h-4 text-red-500" />,
-  }[toolCall.status] || <AlertCircle className="w-4 h-4 text-yellow-500" />;
+    pending: <Loader2 className="h-4 w-4 animate-spin text-[color:var(--ink-muted)]" />,
+    running: <Loader2 className="h-4 w-4 animate-spin text-[color:var(--accent)]" />,
+    completed: <CheckCircle className="h-4 w-4 text-emerald-600" />,
+    error: <XCircle className="h-4 w-4 text-red-600" />,
+  }[toolCall.status] || <AlertCircle className="h-4 w-4 text-amber-600" />;
 
   const badgeColor = {
-    read: "bg-green-100 text-green-700",
-    write: "bg-red-100 text-red-700",
-    mixed: "bg-yellow-100 text-yellow-700",
-  }[toolCall.classification] || "bg-gray-100 text-gray-700";
+    read: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    write: "border-red-200 bg-red-50 text-red-700",
+    mixed: "border-amber-200 bg-amber-50 text-amber-700",
+  }[toolCall.classification] || "border-[color:var(--line)] bg-white text-[color:var(--ink-soft)]";
 
   return (
-    <div className="my-2 ml-8 border rounded-lg bg-white shadow-sm">
+    <div className="my-3 ml-8 overflow-hidden rounded-[8px] border border-[color:var(--line)] bg-white/75 shadow-sm">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-gray-50 rounded-lg"
+        className="flex w-full items-center gap-2 px-3 py-2.5 text-left transition-colors hover:bg-[color:var(--surface-muted)]"
       >
-        {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+        {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         {statusIcon}
-        <span className="font-mono text-sm font-medium">{toolCall.name}</span>
-        <span className={`text-xs px-2 py-0.5 rounded-full ${badgeColor}`}>
+        <span className="min-w-0 flex-1 truncate font-mono text-sm font-semibold text-[color:var(--ink)]">{toolCall.name}</span>
+        <span className={`ds-badge ${badgeColor}`}>
           {toolCall.classification}
         </span>
       </button>
       {expanded && (
-        <div className="px-3 pb-2">
-          <div className="text-xs text-gray-500 mb-1">Arguments:</div>
-          <pre className="text-xs bg-gray-50 p-2 rounded overflow-auto max-h-48">
+        <div className="border-t border-[color:var(--line)] px-3 pb-3 pt-3">
+          <div className="mb-1 text-xs font-bold uppercase text-[color:var(--ink-muted)]">Argumentos</div>
+          <pre className="max-h-48 overflow-auto rounded-[8px] bg-[#15171d] p-3 text-xs text-[#f7f4ee]">
             {JSON.stringify(toolCall.arguments, null, 2)}
           </pre>
           {toolCall.result !== undefined && (
             <>
-              <div className="text-xs text-gray-500 mt-2 mb-1">Result:</div>
-              <pre className="text-xs bg-gray-50 p-2 rounded overflow-auto max-h-48">
+              <div className="mb-1 mt-3 text-xs font-bold uppercase text-[color:var(--ink-muted)]">Resultado</div>
+              <pre className="max-h-48 overflow-auto rounded-[8px] bg-[#15171d] p-3 text-xs text-[#f7f4ee]">
                 {typeof toolCall.result === "string"
                   ? toolCall.result
                   : JSON.stringify(toolCall.result, null, 2)}

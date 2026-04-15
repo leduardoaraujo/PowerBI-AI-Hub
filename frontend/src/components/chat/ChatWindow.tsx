@@ -3,26 +3,40 @@ import { apiClient } from "../../services/api";
 import { wsService } from "../../services/ws";
 import { MessageList } from "./MessageList";
 import { MessageInput } from "./MessageInput";
+import type { Session } from "../../types";
 
 export function ChatWindow() {
-  const { session, isLoading, addMessage, setLoading } = useAppStore();
+  const { session, setSession, isLoading, addMessage, setLoading } = useAppStore();
 
-  const handleSendREST = async (content: string) => {
-    if (!session) return;
+  const ensureSession = async () => {
+    if (session) return session;
+    const newSession = await apiClient.createSession();
+    setSession(newSession);
+    return newSession;
+  };
 
+  const addUserMessage = (content: string, activeSession: Session) => {
     addMessage({
       id: crypto.randomUUID(),
-      session_id: session.id,
+      session_id: activeSession.id,
       role: "user",
       content,
       tool_calls: [],
       timestamp: new Date().toISOString(),
     });
+  };
 
+  const handleSendREST = async (content: string, activeSession: Session) => {
+    addUserMessage(content, activeSession);
     setLoading(true);
 
     try {
-      const result = await apiClient.sendMessage(session.id, content, session.provider, session.model);
+      const result = await apiClient.sendMessage(
+        activeSession.id,
+        content,
+        activeSession.provider,
+        activeSession.model
+      );
       const events = (result as { events?: Array<{ type?: string; content?: string }> }).events || [];
 
       let assistantContent = "";
@@ -35,7 +49,7 @@ export function ChatWindow() {
       if (assistantContent) {
         addMessage({
           id: crypto.randomUUID(),
-          session_id: session.id,
+          session_id: activeSession.id,
           role: "assistant",
           content: assistantContent,
           tool_calls: [],
@@ -45,9 +59,9 @@ export function ChatWindow() {
     } catch (err) {
       addMessage({
         id: crypto.randomUUID(),
-        session_id: session.id,
+        session_id: activeSession.id,
         role: "assistant",
-        content: `Error: ${err instanceof Error ? err.message : "Unknown error"}`,
+        content: `Nao consegui responder agora. ${err instanceof Error ? err.message : "Tente novamente em instantes."}`,
         tool_calls: [],
         timestamp: new Date().toISOString(),
       });
@@ -56,34 +70,35 @@ export function ChatWindow() {
     }
   };
 
-  const handleSendWS = (content: string) => {
-    if (!session) return;
-    addMessage({
-      id: crypto.randomUUID(),
-      session_id: session.id,
-      role: "user",
-      content,
-      tool_calls: [],
-      timestamp: new Date().toISOString(),
-    });
+  const handleSendWS = (content: string, activeSession: Session) => {
+    addUserMessage(content, activeSession);
     setLoading(true);
-    wsService.send(content, session.provider, session.model);
+    wsService.send(content, activeSession.provider, activeSession.model);
   };
 
-  const handleSend = (content: string) => {
-    if (wsService.isConnected()) {
-      handleSendWS(content);
-    } else {
-      handleSendREST(content);
+  const handleSend = async (content: string) => {
+    setLoading(true);
+    try {
+      const activeSession = await ensureSession();
+      if (wsService.isConnected()) {
+        handleSendWS(content, activeSession);
+      } else {
+        await handleSendREST(content, activeSession);
+      }
+    } catch (err) {
+      console.error("Failed to start chat:", err);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto px-4 py-2">
-        <MessageList />
-      </div>
-      <MessageInput onSend={handleSend} disabled={isLoading || !session} />
+    <div className="flex h-full min-h-0 bg-[color:var(--surface)]">
+      <section className="flex min-w-0 flex-1 flex-col">
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-8 sm:px-8">
+          <MessageList onPromptSelect={handleSend} />
+        </div>
+        <MessageInput onSend={handleSend} disabled={isLoading} isLoading={isLoading} />
+      </section>
     </div>
   );
 }

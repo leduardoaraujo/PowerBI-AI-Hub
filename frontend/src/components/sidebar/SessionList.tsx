@@ -5,9 +5,13 @@ import { ConnectionStatus } from "./ConnectionStatus";
 import { ProviderSelector } from "./ProviderSelector";
 import { ModeToggle } from "./ModeToggle";
 import type { Session } from "../../types";
-import { Plug, Trash2 } from "lucide-react";
+import { Cable, Plus, Power, Sparkles, Trash2, Unplug } from "lucide-react";
 
-export function SessionList() {
+interface SessionListProps {
+  compact?: boolean;
+}
+
+export function SessionList({ compact = false }: SessionListProps) {
   const { session, setSession, setMessages, setMcpStatus, reset } = useAppStore();
 
   const handleNewSession = async () => {
@@ -45,45 +49,66 @@ export function SessionList() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 border-r">
-      <div className="p-4 border-b">
+    <div className={`${compact ? "max-h-[76vh]" : "h-full"} flex flex-col overflow-hidden bg-[color:var(--surface-muted)]`}>
+      <div className="border-b border-[color:var(--line)] p-5">
+        {!compact && (
+          <div className="mb-5 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-[8px] bg-[color:var(--ink)] text-white">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-bold text-[color:var(--ink)]">PowerBI AI Hub</p>
+              <p className="text-xs text-[color:var(--ink-muted)]">Chat para conversar com dados</p>
+            </div>
+          </div>
+        )}
         <button
           onClick={handleNewSession}
-          className="w-full rounded-lg bg-blue-600 text-white px-4 py-2 text-sm hover:bg-blue-700 transition-colors"
+          className="ds-button ds-button-primary w-full"
         >
-          New Session
+          <Plus className="h-4 w-4" />
+          Nova conversa
         </button>
       </div>
 
-      <ConnectionStatus />
+      <div className="space-y-4 overflow-y-auto p-4">
+        <ConnectionStatus />
 
-      <div className="px-4 py-2 flex gap-2">
-        <button
-          onClick={handleConnectMCP}
-          className="flex items-center gap-1 rounded px-3 py-1.5 text-xs bg-green-600 text-white hover:bg-green-700"
-        >
-          <Plug className="w-3 h-3" /> Connect MCP
-        </button>
-        <button
-          onClick={handleDisconnect}
-          className="flex items-center gap-1 rounded px-3 py-1.5 text-xs bg-gray-200 text-gray-700 hover:bg-gray-300"
-        >
-          Disconnect
-        </button>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={handleConnectMCP}
+            className="ds-button ds-button-secondary min-h-9 px-3 text-xs"
+          >
+            <Cable className="h-3.5 w-3.5 text-[color:var(--success)]" />
+            Conectar dados
+          </button>
+          <button
+            onClick={handleDisconnect}
+            className="ds-button ds-button-secondary min-h-9 px-3 text-xs"
+          >
+            <Unplug className="h-3.5 w-3.5 text-[color:var(--ink-muted)]" />
+            Desconectar
+          </button>
+        </div>
+
+        <ProviderSelector />
+        <ModeToggle />
       </div>
-
-      <ProviderSelector />
-      <ModeToggle />
 
       <div className="flex-1" />
 
       {session && (
-        <div className="p-4 border-t">
+        <div className="border-t border-[color:var(--line)] p-4">
+          <div className="mb-3 flex items-center gap-2 text-xs text-[color:var(--ink-muted)]">
+            <Power className="h-3.5 w-3.5" />
+            Conversa ativa
+          </div>
           <button
             onClick={handleDisconnectSession}
-            className="w-full flex items-center justify-center gap-2 rounded px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+            className="ds-button ds-button-danger w-full"
           >
-            <Trash2 className="w-4 h-4" /> End Session
+            <Trash2 className="h-4 w-4" />
+            Encerrar conversa
           </button>
         </div>
       )}

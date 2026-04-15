@@ -27,14 +27,19 @@ export function ProviderSelector() {
   const currentProvider = providers.find((p) => p.id === session?.provider);
 
   return (
-    <div className="px-4 py-3 border-b">
-      <label className="block text-xs font-medium text-gray-500 mb-1">Provider</label>
+    <div className="rounded-[8px] border border-[color:var(--line)] bg-white/55 p-3">
+      <div className="mb-3">
+        <p className="text-sm font-semibold text-[color:var(--ink)]">Assistente</p>
+        <p className="text-xs text-[color:var(--ink-muted)]">Padrao recomendado para a maioria dos usuarios.</p>
+      </div>
+
+      <label className="ds-label mb-1">Empresa</label>
       <select
         value={session?.provider || ""}
         onChange={(e) => handleProviderChange(e.target.value)}
-        className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
+        className="ds-field px-3 py-2 text-sm"
       >
-        <option value="" disabled>Select provider</option>
+        <option value="" disabled>Selecione</option>
         {providers.map((p) => (
           <option key={p.id} value={p.id}>{p.label}</option>
         ))}
@@ -42,11 +47,11 @@ export function ProviderSelector() {
 
       {currentProvider && (
         <>
-          <label className="block text-xs font-medium text-gray-500 mt-2 mb-1">Model</label>
+          <label className="ds-label mb-1 mt-3">Modelo</label>
           <select
             value={session?.model || ""}
             onChange={(e) => handleModelChange(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
+            className="ds-field px-3 py-2 text-sm"
           >
             {currentProvider.models.map((m) => (
               <option key={m} value={m}>{m}</option>
